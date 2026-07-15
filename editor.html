@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>範本編輯 — 賀卡影片產生器（管理者）</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="wrap wrap-wide">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">管</div>
+        <div>
+          <h1>範本編輯（管理者）</h1>
+          <div class="sub">上傳影片 → 拖曳定位文字框 → 設定樣式與 Drive 連結 → 匯出 templates.json</div>
+        </div>
+      </div>
+      <div class="right">
+        <label class="pill">當月：<input id="mMonth" style="border:0;background:transparent;width:78px;font-family:var(--mono)" placeholder="2026-07"></label>
+        <a class="btn btn-ghost" href="index.html">← 專員頁</a>
+      </div>
+    </div>
+
+    <div class="ed">
+      <!-- 左：舞台 -->
+      <div>
+        <div class="panel">
+          <h3>1. 上傳影片（僅用於定位，實際影片請另外放到 Google Drive）</h3>
+          <div class="drop" id="edDrop">
+            <div class="big">拖入影片或點擊選擇</div>
+            <div class="small">會自動讀取解析度與檔名，並擷取一張縮圖</div>
+          </div>
+          <input type="file" id="edFile" accept="video/*" class="hide">
+          <div class="row" style="margin-top:10px">
+            <span class="pill">解析度 <b id="resTag" class="mono"></b></span>
+            <button class="btn btn-ghost" id="addName">＋名字欄位</button>
+            <button class="btn btn-ghost" id="addGreet">＋賀語欄位</button>
+            <button class="btn btn-ghost" id="recapThumb">重新擷取縮圖</button>
+          </div>
+          <div id="stageWrap" class="edstage hide" style="margin-top:12px">
+            <video id="edVideo" muted playsinline></video>
+            <div class="layer" id="edLayer" style="position:absolute;inset:0"></div>
+          </div>
+          <div class="muted" style="margin-top:8px">提示：在預覽上直接拖曳文字框定位；右側可調樣式。</div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3>範本資訊</h3>
+          <div class="field"><label>範本名稱</label><input class="input" id="mName" placeholder="例：新春賀卡 A"></div>
+          <div class="field"><label>說明</label><input class="input" id="mDesc" placeholder="給專員看的簡短說明"></div>
+          <div class="field"><label>影片檔名（自動）</label><input class="input mono" id="mVideoFile" readonly></div>
+          <div class="field"><label>Google Drive 分享連結</label>
+            <input class="input" id="mDrive" placeholder="貼上檔案的分享連結">
+            <div class="muted" style="margin-top:4px">請把該影片在 Drive 設為「<b>知道連結的任何人皆可檢視</b>」。
+              <button class="btn btn-ghost" id="driveHelpBtn" style="padding:4px 10px;font-size:12px">產生直接下載連結</button></div>
+            <div id="driveDirectWrap" class="alert info hide" style="margin-top:6px">直接下載連結：<span id="driveDirect" class="mono" style="word-break:break-all"></span></div>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" id="saveTpl">儲存到清單</button>
+            <button class="btn" id="newTpl">新增另一個範本</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：屬性 + 清單 -->
+      <div>
+        <div class="panel">
+          <h3>文字框</h3>
+          <div class="fieldlist" id="fieldList"></div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div id="props"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3>範本清單 / 匯入匯出</h3>
+          <div class="fieldlist" id="tplList"></div>
+          <div class="row" style="margin-top:12px">
+            <button class="btn" id="importBtn">匯入 templates.json</button>
+            <button class="btn btn-primary" id="exportBtn">匯出 templates.json</button>
+          </div>
+          <input type="file" id="importFile" accept="application/json,.json" class="hide">
+          <div class="muted" style="margin-top:10px">匯出後，把 <b>templates.json</b> 放回網站根目錄，就完成當月更新。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      文字座標、字級、描邊、陰影都以「相對影片尺寸的比例」儲存，所以與最終影片解析度無關，燒錄結果會和這裡的預覽一致（WYSIWYG）。
+    </div>
+  </div>
+
+  <script src="js/lib.js"></script>
+  <script src="js/editor.js"></script>
+</body>
+</html>

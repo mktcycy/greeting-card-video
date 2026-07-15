@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#B4232A"/><stop offset="1" stop-color="#7A0F14"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#g)"/>
+  <circle cx="240" cy="110" r="58" fill="#F7D774" opacity="0.92"/>
+  <text x="240" y="126" font-family="serif" font-size="52" fill="#7A0F14" text-anchor="middle" font-weight="700">福</text>
+  <text x="240" y="205" font-family="sans-serif" font-size="30" fill="#F7D774" text-anchor="middle" font-weight="700">示範範本</text>
+  <text x="240" y="238" font-family="sans-serif" font-size="16" fill="#ffffff" text-anchor="middle" opacity="0.8">新春賀卡 (1920×1080)</text>
+</svg>

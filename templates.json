@@ -1,0 +1,54 @@
+{
+  "month": "2026-07",
+  "note": "每月由管理者用 editor.html 產生此檔並放回網站根目錄即完成更新。座標/字級/描邊/陰影皆為『相對影片尺寸的比例(0~1)』，與解析度無關。",
+  "fonts": [
+    { "family": "Noto Sans SC", "label": "思源黑體(簡)" },
+    { "family": "Noto Serif SC", "label": "思源宋體(簡)" },
+    { "family": "Ma Shan Zheng", "label": "馬善政毛筆" },
+    { "family": "ZCOOL KuaiLe", "label": "站酷快樂體" },
+    { "family": "Long Cang", "label": "龍藏草書" }
+  ],
+  "googleFontsHref": "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=Long+Cang&display=swap",
+  "templates": [
+    {
+      "id": "sample-newyear",
+      "name": "示範範本：新春賀卡",
+      "desc": "示範用。實際請由管理者在編輯頁上傳自己的影片後重新產生。",
+      "thumb": "assets/thumb-sample.svg",
+      "driveUrl": "https://drive.google.com/file/d/PUT_YOUR_FILE_ID_HERE/view?usp=sharing",
+      "videoFile": "sample_newyear.mp4",
+      "width": 1920,
+      "height": 1080,
+      "fields": [
+        {
+          "type": "name",
+          "label": "收件人名字",
+          "default": "",
+          "placeholder": "請輸入名字（必填）",
+          "xf": 0.5, "yf": 0.44,
+          "font": "Ma Shan Zheng",
+          "sizef": 0.14,
+          "color": "#F7D774",
+          "weight": 700,
+          "align": "center",
+          "stroke": { "color": "#7A1F1F", "widthf": 0.006 },
+          "shadow": { "color": "#000000", "blurf": 0.006, "xf": 0.0, "yf": 0.004 }
+        },
+        {
+          "type": "greeting",
+          "label": "賀語",
+          "default": "新春快樂 · 萬事如意",
+          "placeholder": "可修改賀語",
+          "xf": 0.5, "yf": 0.62,
+          "font": "Noto Serif SC",
+          "sizef": 0.058,
+          "color": "#FFFFFF",
+          "weight": 700,
+          "align": "center",
+          "stroke": { "color": "#8A0F0F", "widthf": 0.004 },
+          "shadow": { "color": "#000000", "blurf": 0.006, "xf": 0.0, "yf": 0.003 }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>賀卡影片產生器 — 專員產出</title>
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">賀</div>
+        <div>
+          <h1>賀卡影片產生器</h1>
+          <div class="sub">選範本 → 下載影片 → 拖入 → 輸入名字 → 產出</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="pill" id="monthTag"></span>
+        <a class="btn btn-ghost" href="editor.html" title="管理者用">範本編輯</a>
+      </div>
+    </div>
+
+    <div id="browserWarn" class="alert warn hide">
+      建議使用 <b>Chrome</b> 或 <b>Edge</b> 瀏覽器。其他瀏覽器可能無法產出影片。
+    </div>
+
+    <!-- 首頁：範本卡片 -->
+    <section id="home">
+      <div id="cards" class="grid"></div>
+    </section>
+
+    <!-- 產出流程 -->
+    <section id="flow" class="hide">
+      <div class="topbar" style="border:0;margin-bottom:8px;padding:0">
+        <button class="btn btn-ghost" id="backBtn">← 返回範本</button>
+        <h2 id="flowTitle" style="margin:0;font-size:18px"></h2>
+        <span></span>
+      </div>
+
+      <div class="steps">
+        <!-- Step 1 -->
+        <div class="step" id="step1">
+          <div class="head"><span class="num">1</span><h3>下載影片</h3></div>
+          <div class="hint">點下面按鈕會開新分頁到 Google Drive，下載影片後，把檔案拖到步驟 2 的框框。</div>
+          <a class="btn btn-primary btn-lg" id="dlBtn" target="_blank" rel="noopener">前往 Google Drive 下載影片</a>
+          <div class="muted" style="margin-top:8px">檔名應為：<b id="dlFileName" class="mono"></b>（大檔案 Google 可能會多跳一次「下載確認」，點確認即可）</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" id="step2">
+          <div class="head"><span class="num">2</span><h3>拖入影片</h3></div>
+          <div class="hint">把剛剛下載的「<b id="expectName" class="mono"></b>」拖進來，或點框框選擇檔案。</div>
+          <div class="drop" id="drop">
+            <div class="big" id="dropMsg">把下載好的影片拖到這裡，或點擊選擇檔案</div>
+            <div class="small">支援 mp4／建議 1080p、60 秒內、200MB 以內</div>
+          </div>
+          <input type="file" id="fileInput" accept="video/*" class="hide">
+          <div class="alert err hide" id="dropErr"></div>
+          <div id="pvWrap" class="preview hide" style="margin-top:12px">
+            <video id="pvVideo" muted playsinline></video>
+            <div class="layer" id="pvLayer"></div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" id="step3">
+          <div class="head"><span class="num">3</span><h3>輸入文字</h3></div>
+          <div class="hint">名字必填；賀語已預填、可修改。右邊小色塊可改文字顏色。上方預覽會即時顯示。</div>
+          <div id="inputs"></div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" id="step4">
+          <div class="head"><span class="num">4</span><h3>產出</h3></div>
+          <div class="hint">按下產出，會把文字燒進影片並自動下載（第一次會先載入影像引擎，需要幾秒）。</div>
+          <button class="btn btn-primary btn-lg btn-block" id="genBtn" disabled>產出賀卡影片</button>
+          <div id="prog" class="hide" style="margin-top:14px">
+            <div class="progress"><i id="progBar"></i></div>
+            <div class="progress-label" id="progLabel"></div>
+          </div>
+          <div class="muted" style="margin-top:10px">同一支影片產出後，若要換名字，直接改上面文字再按產出即可，不用重拖。</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footnote">
+      因瀏覽器安全限制（CORS），無法自動從 Google Drive 抓影片，所以需要你先下載再拖入。所有處理都在你的電腦瀏覽器內完成，影片不會上傳。
+    </div>
+  </div>
+
+  <script src="js/lib.js"></script>
+  <script src="js/staff.js"></script>
+</body>
+</html>
