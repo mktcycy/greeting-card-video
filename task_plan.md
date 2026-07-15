@@ -25,3 +25,8 @@
 - overlay: ffmpeg -i in -i overlay.png -filter_complex "[0:v][1:v]overlay=0:0[v]" -map "[v]" -map 0:a? -c:v libx264 -pix_fmt yuv420p -c:a copy
 - ffmpeg 0.12 + @ffmpeg/core (single-thread) via toBlobURL from unpkg
 - filename match: lenient (strip (1)/ext/case/spaces)
+
+## Status: DONE (2026-07-15)
+All files built. Deployed: https://mktcycy.github.io/greeting-card-video/ (repo mktcycy/greeting-card-video, demo account).
+Verified: both pages render, no JS errors, templates.json loads, live assets 200. ffmpeg burn not runnable in headless (needs real video+interaction) — recommend user smoke test.
+Deviations from spec: batch/zip removed (user: 一次一個); staff-side per-field colour picker added (user: 字體要可以改顏色); fonts=SC (user: 簡中).
