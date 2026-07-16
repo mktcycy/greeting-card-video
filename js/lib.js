@@ -135,28 +135,32 @@
     return { ok: isChromium, isChromium };
   };
 
-  /* ---------- ffmpeg.wasm 單執行緒 (0.11 UMD, 免 COOP/COEP) ---------- */
-  const FF = {
-    inst: null,
-    loaded: false,
-    inputName: null,
-    CORE: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
-  };
+  /* ---------- ffmpeg.wasm 0.12 單執行緒 core（免 SharedArrayBuffer / COOP-COEP）----
+     class 檔自我託管於 js/ffmpeg/（worker 需同源才能載入），core wasm 走 CDN。 */
+  const FF = { inst: null, loaded: false, inputName: null, onProg: null,
+    CORE: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd" };
   GC.ffmpegLoaded = () => FF.loaded;
 
-  GC.ensureFFmpeg = async function (onProgress) {
+  async function toBlobURL(url, mime) {
+    const buf = await (await fetch(url)).arrayBuffer();
+    return URL.createObjectURL(new Blob([buf], { type: mime }));
+  }
+  async function fetchFile(file) { return new Uint8Array(await file.arrayBuffer()); }
+
+  GC.ensureFFmpeg = async function () {
     if (FF.loaded) return FF.inst;
-    if (typeof FFmpeg === "undefined")
-      throw new Error("ffmpeg 函式庫未載入（請確認網路連線或使用 Chrome/Edge）");
-    const { createFFmpeg } = FFmpeg;
-    FF.inst = createFFmpeg({
-      log: false,
-      corePath: FF.CORE,
-      progress: ({ ratio }) => {
-        if (onProgress && ratio >= 0 && ratio <= 1) onProgress(ratio);
-      },
+    let mod;
+    try {
+      mod = await import(new URL("js/ffmpeg/index.js", document.baseURI).href);
+    } catch (e) {
+      throw new Error("影像引擎載入失敗（請用 Chrome/Edge 並確認網路）");
+    }
+    FF.inst = new mod.FFmpeg();
+    FF.inst.on("progress", ({ progress }) => { if (FF.onProg && progress >= 0 && progress <= 1) FF.onProg(progress); });
+    await FF.inst.load({
+      coreURL: await toBlobURL(`${FF.CORE}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${FF.CORE}/ffmpeg-core.wasm`, "application/wasm"),
     });
-    await FF.inst.load();
     FF.loaded = true;
     return FF.inst;
   };
@@ -164,22 +168,19 @@
   // 寫入影片檔到虛擬檔案系統（同一支影片只需寫一次）
   GC.setInputVideo = async function (file) {
     const ff = await GC.ensureFFmpeg();
-    const { fetchFile } = FFmpeg;
-    if (FF.inputName) {
-      try { ff.FS("unlink", FF.inputName); } catch (e) {}
-    }
+    if (FF.inputName) { try { await ff.deleteFile(FF.inputName); } catch (e) {} }
     FF.inputName = "input.mp4";
-    ff.FS("writeFile", FF.inputName, await fetchFile(file));
+    await ff.writeFile(FF.inputName, await fetchFile(file));
   };
 
   // 用 overlay PNG 燒錄，回傳輸出 Blob(mp4)。可重複呼叫(換文字)不需重寫影片。
   GC.burn = async function (overlayBlob, onProgress) {
     const ff = FF.inst;
     if (!ff || !FF.inputName) throw new Error("尚未載入影片");
-    ff.FS("writeFile", "overlay.png", new Uint8Array(await overlayBlob.arrayBuffer()));
-    if (onProgress) onProgress(0);
+    await ff.writeFile("overlay.png", new Uint8Array(await overlayBlob.arrayBuffer()));
+    FF.onProg = onProgress; if (onProgress) onProgress(0);
     try {
-      await ff.run(
+      await ff.exec([
         "-i", FF.inputName,
         "-i", "overlay.png",
         "-filter_complex", "[0:v][1:v]overlay=0:0:format=auto[v]",
@@ -190,20 +191,21 @@
         "-pix_fmt", "yuv420p",
         "-c:a", "copy",
         "-movflags", "+faststart",
-        "output.mp4"
-      );
+        "output.mp4",
+      ]);
     } finally {
-      try { ff.FS("unlink", "overlay.png"); } catch (e) {}
+      try { await ff.deleteFile("overlay.png"); } catch (e) {}
+      FF.onProg = null;
     }
-    const data = ff.FS("readFile", "output.mp4");
-    try { ff.FS("unlink", "output.mp4"); } catch (e) {}
+    const data = await ff.readFile("output.mp4");
+    try { await ff.deleteFile("output.mp4"); } catch (e) {}
     if (onProgress) onProgress(1);
-    return new Blob([data.buffer], { type: "video/mp4" });
+    return new Blob([data.buffer || data], { type: "video/mp4" });
   };
 
-  GC.freeInput = function () {
+  GC.freeInput = async function () {
     if (FF.inst && FF.inputName) {
-      try { FF.inst.FS("unlink", FF.inputName); } catch (e) {}
+      try { await FF.inst.deleteFile(FF.inputName); } catch (e) {}
       FF.inputName = null;
     }
   };
