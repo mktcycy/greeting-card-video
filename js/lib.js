@@ -58,6 +58,21 @@
     l.setAttribute("data-gcfont", "1");
     document.head.appendChild(l);
   };
+  // 載入管理者上傳的自訂字體（templates.json 內以 base64 data URL 儲存）
+  GC._customLoaded = GC._customLoaded || new Set();
+  GC.loadCustomFonts = async function (fonts) {
+    if (!fonts) return;
+    for (const f of fonts) {
+      if (!f || !f.data || GC._customLoaded.has(f.family)) continue;
+      try {
+        const ff = new FontFace(f.family, `url(${f.data})`);
+        await ff.load();
+        document.fonts.add(ff);
+        GC._customLoaded.add(f.family);
+      } catch (e) { console.warn("自訂字體載入失敗", f.family, e); }
+    }
+  };
+
   // 燒錄前強制載入「該段文字」需要的字形（解決 Canvas + Google Fonts 中文子集問題）
   GC.loadFontForText = async function (family, weight, sizePx, text) {
     if (!document.fonts || !text) return;

@@ -39,7 +39,26 @@
     wire();
     loadPublishSettings();
     await loadLive();       // 自動載入目前線上的 templates.json（免手動匯入）
+    await GC.loadCustomFonts(meta.fonts);   // 管理者上傳過的字體
     restoreDraftPrompt();   // 若有未發布草稿，提示還原
+  }
+
+  /* ---- 上傳自訂字體 ---- */
+  let fontSeq = 0;
+  async function uploadFont(file) {
+    if (!file) return;
+    if (!/\.(ttf|otf|woff2?|ttc)$/i.test(file.name)) { GC.toast("請選字體檔（.ttf / .otf / .woff / .woff2）", "warn"); return; }
+    const mb = file.size / 1048576;
+    if (mb > 3 && !confirm(`字體檔 ${mb.toFixed(1)}MB 偏大，會讓 templates.json 變大、專員載入變慢（中文字體通常很大）。確定加入？`)) return;
+    const dataURL = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+    const label = file.name.replace(/\.[^.]+$/, "");
+    const family = "upfont-" + Date.now().toString(36) + "-" + (fontSeq++);
+    try { const ff = new FontFace(family, `url(${dataURL})`); await ff.load(); document.fonts.add(ff); GC._customLoaded.add(family); }
+    catch (e) { GC.toast("字體載入失敗：" + e.message, "err"); return; }
+    meta.fonts = meta.fonts.concat([{ family, label: "（上傳）" + label, data: dataURL }]);
+    saveDraft();
+    GC.toast("已加入字體「" + label + "」，可在文字框的字體選單選用", "ok", 4500);
+    if (sel >= 0) renderProps();
   }
 
   // 開啟編輯頁時自動抓現行 templates.json
@@ -253,6 +272,7 @@
         ${["center","left","right"].map(a=>`<option value="${a}" ${f.align==a?"selected":""}>${a}</option>`).join("")}</select></div>
       <div class="field"><label>文字顏色</label><div class="row"><input type="color" data-k="color" value="${f.color}"><input class="input mono" data-k="color" value="${f.color}"></div>
         <div class="swatches">${SW.map(c=>`<span class="sw" style="background:${c}" data-sw="color" data-c="${c}"></span>`).join("")}</div></div>
+      <details style="margin:6px 0"><summary style="cursor:pointer;font-size:13px;color:var(--muted);padding:4px 0">進階樣式（描邊、陰影）</summary>
       <div class="grid2">
         <div class="field"><label>描邊顏色</label><input type="color" data-k="stroke.color" value="${f.stroke.color}"></div>
         <div class="field"><label>描邊粗細 <span class="mono">${(f.stroke.widthf*100).toFixed(2)}%</span></label>
@@ -269,6 +289,7 @@
         <div class="field"><label>陰影 Y <span class="mono">${((f.shadow.yf||0)*100).toFixed(1)}%</span></label>
           <input type="range" min="-5" max="5" step="0.2" value="${(f.shadow.yf||0)*100}" data-k="shadow.yf"></div>
       </div>
+      </details>
       <button class="btn" data-act="delField" style="color:var(--brand)">刪除此文字框</button>`;
     // wire property controls
     p.querySelectorAll("[data-k]").forEach((el) => {
@@ -399,9 +420,8 @@
     $("#saveTpl").onclick = saveTemplate;
     $("#newTpl").onclick = newTemplate;
     $("#recapThumb").onclick = () => { cur.thumb = ""; captureThumb(); };
-    $("#importBtn").onclick = () => $("#importFile").click();
-    $("#importFile").onchange = (e) => importJSON(e.target.files[0]);
-    $("#exportBtn").onclick = exportJSON;
+    $("#fontBtn").onclick = () => $("#fontFile").click();
+    $("#fontFile").onchange = (e) => { uploadFont(e.target.files[0]); e.target.value = ""; };
     $("#driveHelpBtn").onclick = driveHelper;
     $("#pgPublish").onclick = publish;
     $("#pgClearTok").onclick = clearToken;

@@ -41,7 +41,9 @@
             <span class="pill">解析度 <b id="resTag" class="mono"></b></span>
             <button class="btn btn-ghost" id="addName">＋名字欄位</button>
             <button class="btn btn-ghost" id="addGreet">＋賀語欄位</button>
+            <button class="btn btn-ghost" id="fontBtn">＋上傳字體</button>
             <button class="btn btn-ghost" id="recapThumb">重新擷取縮圖</button>
+            <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,.ttc" class="hide">
           </div>
           <div id="stageWrap" class="edstage hide" style="margin-top:12px">
             <video id="edVideo" muted playsinline></video>
@@ -78,14 +80,9 @@
         </div>
 
         <div class="panel" style="margin-top:16px">
-          <h3>範本清單 / 匯入匯出</h3>
+          <h3>範本清單</h3>
           <div class="fieldlist" id="tplList"></div>
-          <div class="row" style="margin-top:12px">
-            <button class="btn" id="importBtn">匯入 templates.json</button>
-            <button class="btn btn-primary" id="exportBtn">匯出 templates.json</button>
-          </div>
-          <input type="file" id="importFile" accept="application/json,.json" class="hide">
-          <div class="muted" style="margin-top:10px">開啟本頁時會<b>自動載入目前線上的範本</b>（免手動匯入）。匯出是備用；下面的「發布」可直接更新網站、免手動放根目錄。</div>
+          <div class="muted" style="margin-top:10px">開啟本頁會<b>自動載入</b>目前線上的範本；改好後用下面「發布到網站」直接更新，不用匯入匯出、也不用放檔案。</div>
         </div>
 
         <div class="panel" style="margin-top:16px">

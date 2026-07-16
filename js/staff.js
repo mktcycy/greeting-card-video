@@ -15,6 +15,7 @@
       return;
     }
     GC.ensureFontsCss(DATA.googleFontsHref);
+    GC.loadCustomFonts(DATA.fonts);   // 管理者上傳的字體
     $("#monthTag").textContent = DATA.month || "";
     renderHome();
   }
