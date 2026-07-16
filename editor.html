@@ -91,7 +91,8 @@
         <div class="panel" style="margin-top:16px">
           <h3>一鍵發布到網站 <span class="pill" style="font-weight:600">免放根目錄</span></h3>
           <div class="muted" style="margin-bottom:10px">設定一次 GitHub token 後，按「發布」就會直接更新網站的 templates.json，Pages 會自動重建，不用再匯出、手動上傳。</div>
-          <button class="adv-toggle" id="pgToggle" type="button"><span class="caret">▸</span> 發布設定（GitHub）</button>
+          <div id="pgStatus" class="alert ok hide" style="font-size:12.5px"></div>
+          <button class="adv-toggle" id="pgToggle" type="button"><span class="caret">▸</span> 發布設定（GitHub）· 只需設定一次</button>
           <div class="adv-body hide" id="pgBody">
             <div class="grid2">
               <div class="field"><label>GitHub 帳號</label><input class="input mono" id="pgOwner" placeholder="mktcycy"></div>

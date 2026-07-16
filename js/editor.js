@@ -97,7 +97,12 @@
       const s = JSON.parse(localStorage.getItem("gcv_pub") || "null");
       if (s) { $("#pgOwner").value = s.owner || "mktcycy"; $("#pgRepo").value = s.repo || "greeting-card-video"; $("#pgBranch").value = s.branch || "main"; $("#pgPath").value = s.path || "templates.json"; }
       const t = localStorage.getItem("gcv_tok");
-      if (t) { $("#pgToken").value = t; $("#pgRemember").checked = true; }
+      if (t) {
+        $("#pgToken").value = t; $("#pgRemember").checked = true;
+        const st = $("#pgStatus");
+        st.textContent = "✓ 發布設定已就緒（已記住 token）。更新範本只要：編輯 → 儲存到清單 → 發布到網站，不用再填這些。";
+        st.classList.remove("hide");
+      }
     } catch (e) {}
   }
   function clearToken() { localStorage.removeItem("gcv_tok"); $("#pgToken").value = ""; $("#pgRemember").checked = false; GC.toast("已清除本機 token", "ok"); }
