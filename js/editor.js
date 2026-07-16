@@ -167,6 +167,7 @@
       $("#mVideoFile").value = file.name;
       $("#resTag").textContent = `${v.videoWidth}×${v.videoHeight}`;
       $("#stageWrap").classList.remove("hide");
+      $("#thumbBar").classList.remove("hide");
       // 自動擷取縮圖
       v.currentTime = Math.min(0.5, (v.duration || 1) / 3);
     };
@@ -179,7 +180,8 @@
     c.width = w; c.height = h;
     c.getContext("2d").drawImage(v, 0, 0, w, h);
     cur.thumb = c.toDataURL("image/jpeg", 0.72);
-    GC.toast("已自動擷取縮圖", "ok");
+    const tp = $("#thumbPrev"); tp.src = cur.thumb; tp.style.display = "block";
+    GC.toast("已更新縮圖（目前畫面）", "ok");
   }
 
   /* ---- 文字框 ---- */
@@ -325,7 +327,6 @@
   function saveTemplate() {
     if (!cur.width) { GC.toast("請先上傳影片", "warn"); return; }
     cur.name = $("#mName").value.trim();
-    cur.desc = $("#mDesc").value.trim();
     cur.driveUrl = $("#mDrive").value.trim();
     if (!cur.name) { GC.toast("請填範本名稱", "warn"); return; }
     if (!cur.driveUrl) { GC.toast("請填 Google Drive 分享連結", "warn"); return; }
@@ -337,8 +338,9 @@
   }
   function newTemplate() {
     cur = blankTemplate(); sel = -1;
-    $("#mName").value = ""; $("#mDesc").value = ""; $("#mDrive").value = ""; $("#mVideoFile").value = "";
+    $("#mName").value = ""; $("#mDrive").value = ""; $("#mVideoFile").value = "";
     $("#resTag").textContent = ""; $("#stageWrap").classList.add("hide");
+    $("#thumbBar").classList.add("hide"); $("#thumbPrev").style.display = "none";
     if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
     $("#edVideo").removeAttribute("src");
     renderStage(); renderFieldList(); renderProps();
@@ -347,7 +349,7 @@
     const t = templates.find((x) => x.id === id);
     if (!t) return;
     cur = deep(t); sel = -1;
-    $("#mName").value = cur.name; $("#mDesc").value = cur.desc; $("#mDrive").value = cur.driveUrl;
+    $("#mName").value = cur.name; $("#mDrive").value = cur.driveUrl;
     $("#mVideoFile").value = cur.videoFile; $("#resTag").textContent = cur.width ? `${cur.width}×${cur.height}` : "";
     GC.toast("已載入範本，重新上傳同一支影片即可預覽定位", "ok", 4200);
     $("#stageWrap").classList.add("hide");
@@ -419,7 +421,8 @@
     $("#addGreet").onclick = () => addField("greeting");
     $("#saveTpl").onclick = saveTemplate;
     $("#newTpl").onclick = newTemplate;
-    $("#recapThumb").onclick = () => { cur.thumb = ""; captureThumb(); };
+    $("#edSeek").oninput = () => { const v = $("#edVideo"); if (v.duration) v.currentTime = (+$("#edSeek").value / 1000) * v.duration; };
+    $("#setThumb").onclick = () => captureThumb();
     $("#fontBtn").onclick = () => $("#fontFile").click();
     $("#fontFile").onchange = (e) => { uploadFont(e.target.files[0]); e.target.value = ""; };
     $("#driveHelpBtn").onclick = driveHelper;

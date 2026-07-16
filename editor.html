@@ -42,20 +42,24 @@
             <button class="btn btn-ghost" id="addName">＋名字欄位</button>
             <button class="btn btn-ghost" id="addGreet">＋賀語欄位</button>
             <button class="btn btn-ghost" id="fontBtn">＋上傳字體</button>
-            <button class="btn btn-ghost" id="recapThumb">重新擷取縮圖</button>
             <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,.ttc" class="hide">
           </div>
           <div id="stageWrap" class="edstage hide" style="margin-top:12px">
             <video id="edVideo" muted playsinline></video>
             <div class="layer" id="edLayer" style="position:absolute;inset:0"></div>
           </div>
-          <div class="muted" style="margin-top:8px">提示：在預覽上直接拖曳文字框定位；右側可調樣式。</div>
+          <div id="thumbBar" class="row hide" style="margin-top:10px;gap:10px;align-items:center">
+            <span class="muted" style="white-space:nowrap">縮圖畫面</span>
+            <input type="range" id="edSeek" min="0" max="1000" value="0" style="flex:1">
+            <button class="btn" id="setThumb">設為縮圖</button>
+            <img id="thumbPrev" alt="縮圖預覽" style="height:38px;border:1px solid var(--line);border-radius:6px;display:none">
+          </div>
+          <div class="muted" style="margin-top:8px">提示：在預覽上直接拖曳文字框定位；右側可調樣式。拖上面時間軸選畫面，按「設為縮圖」＝專員選範本時看到的小圖。</div>
         </div>
 
         <div class="panel" style="margin-top:16px">
           <h3>範本資訊</h3>
           <div class="field"><label>範本名稱</label><input class="input" id="mName" placeholder="例：新春賀卡 A"></div>
-          <div class="field"><label>說明</label><input class="input" id="mDesc" placeholder="給專員看的簡短說明"></div>
           <div class="field"><label>影片檔名（自動）</label><input class="input mono" id="mVideoFile" readonly></div>
           <div class="field"><label>Google Drive 分享連結</label>
             <input class="input" id="mDrive" placeholder="貼上檔案的分享連結">
