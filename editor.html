@@ -22,6 +22,11 @@
       </div>
     </div>
 
+    <div id="draftBar" class="alert warn hide" style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+      <span>偵測到上次未發布的草稿。</span>
+      <span><button class="btn" id="draftRestore">還原草稿</button> <button class="btn btn-ghost" id="draftDismiss">略過</button></span>
+    </div>
+
     <div class="ed">
       <!-- 左：舞台 -->
       <div>
@@ -80,7 +85,29 @@
             <button class="btn btn-primary" id="exportBtn">匯出 templates.json</button>
           </div>
           <input type="file" id="importFile" accept="application/json,.json" class="hide">
-          <div class="muted" style="margin-top:10px">匯出後，把 <b>templates.json</b> 放回網站根目錄，就完成當月更新。</div>
+          <div class="muted" style="margin-top:10px">開啟本頁時會<b>自動載入目前線上的範本</b>（免手動匯入）。匯出是備用；下面的「發布」可直接更新網站、免手動放根目錄。</div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3>一鍵發布到網站 <span class="pill" style="font-weight:600">免放根目錄</span></h3>
+          <div class="muted" style="margin-bottom:10px">設定一次 GitHub token 後，按「發布」就會直接更新網站的 templates.json，Pages 會自動重建，不用再匯出、手動上傳。</div>
+          <button class="adv-toggle" id="pgToggle" type="button"><span class="caret">▸</span> 發布設定（GitHub）</button>
+          <div class="adv-body hide" id="pgBody">
+            <div class="grid2">
+              <div class="field"><label>GitHub 帳號</label><input class="input mono" id="pgOwner" placeholder="mktcycy"></div>
+              <div class="field"><label>Repo 名稱</label><input class="input mono" id="pgRepo" placeholder="greeting-card-video"></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>分支</label><input class="input mono" id="pgBranch" placeholder="main"></div>
+              <div class="field"><label>檔案路徑</label><input class="input mono" id="pgPath" placeholder="templates.json"></div>
+            </div>
+            <div class="field"><label>GitHub Token（fine-grained，僅需該 repo 的 Contents 讀寫）</label>
+              <input class="input mono" id="pgToken" type="password" placeholder="ghp_ 或 github_pat_..."></div>
+            <label class="row" style="font-size:13px;gap:6px"><input type="checkbox" id="pgRemember"> 記住 token（存在本機瀏覽器）
+              <button class="btn btn-ghost" id="pgClearTok" type="button" style="padding:4px 10px;font-size:12px;margin-left:auto">清除 token</button></label>
+            <div class="alert warn" style="margin-top:8px;font-size:12.5px">⚠️ token 有寫入權，只在<b>你自己的電腦</b>操作、不要用共用電腦；建議用「fine-grained token」且只授權這一個 repo 的 Contents。</div>
+          </div>
+          <button class="btn btn-primary btn-block" id="pgPublish" style="margin-top:12px">發布到網站</button>
         </div>
       </div>
     </div>

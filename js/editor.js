@@ -31,12 +31,102 @@
       shadow: { color: "#000000", blurf: 0.006, xf: 0, yf: 0.004 } };
   }
 
-  function boot() {
+  async function boot() {
     GC.ensureFontsCss(FONTS_HREF);
     cur = blankTemplate();
     fillFontSelect();
     renderAll();
     wire();
+    loadPublishSettings();
+    await loadLive();       // 自動載入目前線上的 templates.json（免手動匯入）
+    restoreDraftPrompt();   // 若有未發布草稿，提示還原
+  }
+
+  // 開啟編輯頁時自動抓現行 templates.json
+  async function loadLive() {
+    try {
+      const j = await fetch("templates.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
+      if (j) {
+        meta.month = j.month || meta.month;
+        meta.fonts = j.fonts || meta.fonts;
+        meta.googleFontsHref = j.googleFontsHref || meta.googleFontsHref;
+        templates = j.templates || [];
+        $("#mMonth").value = meta.month;
+        renderTemplateList();
+        GC.toast(`已自動載入目前線上範本（${templates.length} 個）`, "ok");
+      }
+    } catch (e) { /* 首次部署可能還沒有檔案，忽略 */ }
+  }
+
+  /* ---- 草稿自動保存（localStorage）---- */
+  function saveDraft() {
+    try { localStorage.setItem("gcv_draft", JSON.stringify({ month: $("#mMonth").value, fonts: meta.fonts, googleFontsHref: meta.googleFontsHref, templates })); } catch (e) {}
+  }
+  function restoreDraftPrompt() {
+    let d; try { d = JSON.parse(localStorage.getItem("gcv_draft") || "null"); } catch (e) {}
+    if (d && d.templates && JSON.stringify(d.templates) !== JSON.stringify(templates)) {
+      $("#draftBar").classList.remove("hide");
+      $("#draftRestore").onclick = () => {
+        templates = d.templates; meta.month = d.month || meta.month;
+        $("#mMonth").value = meta.month; renderTemplateList();
+        $("#draftBar").classList.add("hide"); GC.toast("已還原未發布草稿", "ok");
+      };
+      $("#draftDismiss").onclick = () => $("#draftBar").classList.add("hide");
+    }
+  }
+
+  /* ---- 一鍵發布到 GitHub（免手動放根目錄）---- */
+  function buildJSON() {
+    meta.month = $("#mMonth").value.trim();
+    return { month: meta.month, note: "由範本編輯頁匯出/發布。座標/字級/描邊/陰影皆為相對影片尺寸的比例。",
+      fonts: meta.fonts, googleFontsHref: meta.googleFontsHref, templates };
+  }
+  function pgCfg() {
+    return { owner: $("#pgOwner").value.trim(), repo: $("#pgRepo").value.trim(),
+      branch: $("#pgBranch").value.trim() || "main", path: $("#pgPath").value.trim() || "templates.json",
+      token: $("#pgToken").value.trim() };
+  }
+  function savePublishSettings() {
+    const c = pgCfg();
+    localStorage.setItem("gcv_pub", JSON.stringify({ owner: c.owner, repo: c.repo, branch: c.branch, path: c.path }));
+    if ($("#pgRemember").checked) localStorage.setItem("gcv_tok", c.token);
+    else localStorage.removeItem("gcv_tok");
+  }
+  function loadPublishSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem("gcv_pub") || "null");
+      if (s) { $("#pgOwner").value = s.owner || "mktcycy"; $("#pgRepo").value = s.repo || "greeting-card-video"; $("#pgBranch").value = s.branch || "main"; $("#pgPath").value = s.path || "templates.json"; }
+      const t = localStorage.getItem("gcv_tok");
+      if (t) { $("#pgToken").value = t; $("#pgRemember").checked = true; }
+    } catch (e) {}
+  }
+  function clearToken() { localStorage.removeItem("gcv_tok"); $("#pgToken").value = ""; $("#pgRemember").checked = false; GC.toast("已清除本機 token", "ok"); }
+
+  async function publish() {
+    const c = pgCfg();
+    if (!c.owner || !c.repo || !c.token) { GC.toast("請填 GitHub 帳號、repo 與 token", "warn"); return; }
+    if (!templates.length && !confirm("目前沒有任何範本，確定要發布（會清空線上範本）？")) return;
+    savePublishSettings();
+    const btn = $("#pgPublish"); btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> 發布中…`;
+    const api = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/${encodeURIComponent(c.path)}`;
+    const H = { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json" };
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(buildJSON(), null, 2))));
+    try {
+      let sha;
+      const g = await fetch(`${api}?ref=${encodeURIComponent(c.branch)}`, { headers: H });
+      if (g.ok) sha = (await g.json()).sha;         // 已存在→更新；404→新建
+      const put = await fetch(api, { method: "PUT", headers: H,
+        body: JSON.stringify({ message: "更新 templates.json（範本編輯頁）", content, branch: c.branch, sha }) });
+      if (put.ok) {
+        saveDraft();
+        GC.toast("✓ 已發布到網站！GitHub Pages 約幾十秒後自動更新", "ok", 6000);
+      } else {
+        const e = await put.json().catch(() => ({}));
+        const msg = put.status === 401 ? "token 無效或過期" : put.status === 403 ? "token 權限不足（需該 repo 的 contents 寫入權）" : put.status === 404 ? "找不到 repo/branch，請確認設定" : (e.message || put.status);
+        GC.toast("發布失敗：" + msg, "err", 7000);
+      }
+    } catch (e) { GC.toast("發布失敗：" + e.message, "err", 6000); }
+    finally { btn.disabled = false; btn.textContent = "發布到網站"; }
   }
 
   /* ---- 影片上傳 ---- */
@@ -215,7 +305,8 @@
     if (!cur.driveUrl) { GC.toast("請填 Google Drive 分享連結", "warn"); return; }
     const idx = templates.findIndex((t) => t.id === cur.id);
     if (idx >= 0) templates[idx] = deep(cur); else templates.push(deep(cur));
-    GC.toast("已儲存到範本清單（記得最後匯出 templates.json）", "ok");
+    saveDraft();
+    GC.toast("已儲存到清單（可按『發布到網站』一鍵更新，或匯出）", "ok");
     renderTemplateList();
   }
   function newTemplate() {
@@ -238,6 +329,7 @@
   }
   function delTemplate(id) {
     templates = templates.filter((t) => t.id !== id);
+    saveDraft();
     renderTemplateList();
   }
   function renderTemplateList() {
@@ -264,6 +356,7 @@
       templates = j.templates || [];
       $("#mMonth").value = meta.month;
       fillFontSelect();
+      saveDraft();
       renderTemplateList();
       GC.toast(`已匯入 ${templates.length} 個範本`, "ok");
     } catch (e) { GC.toast("匯入失敗：JSON 格式錯誤", "err"); }
@@ -305,6 +398,9 @@
     $("#importFile").onchange = (e) => importJSON(e.target.files[0]);
     $("#exportBtn").onclick = exportJSON;
     $("#driveHelpBtn").onclick = driveHelper;
+    $("#pgPublish").onclick = publish;
+    $("#pgClearTok").onclick = clearToken;
+    $("#pgToggle").onclick = () => { $("#pgToggle").classList.toggle("open"); $("#pgBody").classList.toggle("hide"); };
     window.addEventListener("resize", renderStage);
   }
 
