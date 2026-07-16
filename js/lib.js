@@ -138,7 +138,8 @@
   /* ---------- ffmpeg.wasm 0.12 單執行緒 core（免 SharedArrayBuffer / COOP-COEP）----
      class 檔自我託管於 js/ffmpeg/（worker 需同源才能載入），core wasm 走 CDN。 */
   const FF = { inst: null, loaded: false, inputName: null, onProg: null,
-    CORE: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd" };
+    // 用 ESM core：0.12 的 worker 是 module worker，會用 import() 載 core，需有 export default
+    CORE: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm" };
   GC.ffmpegLoaded = () => FF.loaded;
 
   async function toBlobURL(url, mime) {
