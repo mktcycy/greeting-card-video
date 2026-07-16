@@ -96,7 +96,7 @@
         ? `<textarea rows="2" data-i="${i}" placeholder="${esc(f.placeholder || "")}"></textarea>`
         : `<input class="input ${isName ? "big-input" : ""}" data-i="${i}" placeholder="${esc(f.placeholder || (isName ? "請輸入名字" : ""))}">`;
       wrap.innerHTML = `<label class="${isName ? "req" : ""}">${esc(label)}</label>${control}`;
-      (isName ? nameBox : adv).appendChild(wrap);
+      nameBox.appendChild(wrap);   // 名字＋賀語都放主要區，專員可直接編輯
       const inp = wrap.querySelector("[data-i]");
       inp.value = fieldVals[i].value;
       inp.oninput = () => { fieldVals[i].value = inp.value; layoutOverlay(); updateGate(); };
